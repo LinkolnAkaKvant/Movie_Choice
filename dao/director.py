@@ -5,8 +5,30 @@ class DirectorDAO:
     def __init__(self, session):
         self.session = session
 
-    def get_all(self):
+    def get_one(self, bid):
+        return self.session.query(Director).get(bid)
+
+    def get_all(self, filter):
+        page = filter.get("page")
+
+        if page is not None:
+            return self.session.query(Director).paginate(page=int(page), per_page=12).items
         return self.session.query(Director).all()
 
-    def get_by_id(self, did):
-        return self.session.query(Director).get(did)
+    def create(self, director_d):
+        ent = Director(**director_d)
+        self.session.add(ent)
+        self.session.commit()
+        return ent
+
+    def delete(self, did):
+        director = self.get_one(did)
+        self.session.delete(director)
+        self.session.commit()
+
+    def update(self, director_d):
+        director = self.get_one(director_d.get("id"))
+        director.name = director_d.get("name")
+
+        self.session.add(director)
+        self.session.commit()
